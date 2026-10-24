@@ -1,0 +1,1902 @@
+<!doctype html>
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <meta content="#154b84" name="theme-color"/>
+  <title>
+   ShoreSight - Beach Safety
+  </title>
+  <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+  <style>
+   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --navy: #10477f;
+  --blue: #24598d;
+  --ink: #093a70;
+  --lav: #cdd4ff;
+  --lav2: #e1e7ff;
+  --sky: #d4e5ff;
+  --accent: #5a74e7;
+  --white: #fff;
+  --green: #159447;
+  --yellow: #ffd329;
+  --red: #e31f2d;
+  --muted: #6880a1;
+  --shadow: 0 12px 34px #062a5422
+}
+
+* {
+  box-sizing: border-box
+}
+
+body {
+  margin: 0;
+  background: #edf3fb;
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif
+}
+
+.app {
+  min-height: 100vh;
+  display: flex
+}
+
+.sidebar {
+  width: 250px;
+  flex: 0 0 250px;
+  background: #d2e3ff;
+  padding: 25px 18px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid #c4d7f5;
+  z-index: 4
+}
+
+.brand {
+  font: 900 32px 'Barlow Condensed', sans-serif;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin: 0 0 24px 10px
+}
+
+.nav {
+  display: grid;
+  gap: 7px
+}
+
+.nav button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 12px 10px;
+  font: 700 18px 'Barlow Condensed', sans-serif;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: .18s
+}
+
+.nav button:hover,
+.nav button.active {
+  background: #b9d1f6
+}
+
+.nav svg {
+  width: 21px;
+  height: 21px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  color: #6680a7;
+  font-size: 12px;
+  padding: 12px
+}
+
+.main {
+  min-width: 0;
+  flex: 1;
+  background: var(--blue);
+  padding: 32px clamp(20px, 4vw, 60px) 45px
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0 auto 28px;
+  max-width: 1250px
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--lav);
+  font: 900 clamp(35px, 5vw, 54px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin: 0
+}
+
+.page-title svg {
+  width: 54px;
+  height: 54px;
+  stroke: var(--lav);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linejoin: round
+}
+
+.date-chip {
+  border: 1px solid #ffffff33;
+  border-radius: 999px;
+  color: #d5e1ff;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap
+}
+
+.page {
+  display: none;
+  max-width: 1250px;
+  margin: auto
+}
+
+.page.active {
+  display: block
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, .95fr);
+  gap: 24px
+}
+
+.feature-stack {
+  display: grid;
+  gap: 22px
+}
+
+.card {
+  background: var(--lav);
+  border-radius: 32px;
+  padding: 28px;
+  color: var(--ink);
+  box-shadow: var(--shadow)
+}
+
+.feature {
+  min-height: 215px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform .18s, border .18s
+}
+
+.feature:hover {
+  transform: translateY(-3px);
+  border-color: #90a5ff
+}
+
+.card h2,
+.card h3 {
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 0
+}
+
+.feature h2 {
+  font-size: 27px;
+  margin-bottom: 26px;
+  text-align: center
+}
+
+.feature-action {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--accent);
+  font: 800 26px 'Barlow Condensed', sans-serif;
+  letter-spacing: 2px
+}
+
+.feature-action svg {
+  width: 76px;
+  height: 76px;
+  stroke: var(--accent);
+  fill: none;
+  stroke-width: 2
+}
+
+.conditions {
+  min-height: 458px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 33px
+}
+
+.conditions h2 {
+  font-size: 32px;
+  color: var(--ink);
+  margin-bottom: 32px
+}
+
+.advisory-label {
+  font: 800 28px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 2px;
+  color: #0c1830
+}
+
+.risk-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px
+}
+
+.risk-flag {
+  width: 43px;
+  height: 50px
+}
+
+.advisory-number {
+  font: 900 76px/.95 'Barlow Condensed', sans-serif;
+  color: #08152b;
+  margin: 10px 0 22px
+}
+
+.risk-bar {
+  width: min(100%, 240px);
+  display: flex;
+  gap: 10px;
+  position: relative;
+  padding-bottom: 18px
+}
+
+.risk-bar span {
+  height: 16px;
+  flex: 1
+}
+
+.risk-bar span:nth-child(1) {
+  background: var(--green)
+}
+
+.risk-bar span:nth-child(2) {
+  background: var(--yellow)
+}
+
+.risk-bar span:nth-child(3) {
+  background: var(--red)
+}
+
+.risk-bar.wave-bar span {
+  background: transparent
+}
+
+.risk-bar.wave-bar {
+  background: linear-gradient(90deg, #8fc9ee, #3b76b8, #173f7c);
+  height: 16px;
+  padding: 0;
+  border-radius: 20px
+}
+
+.risk-bar.wave-bar .risk-marker {
+  top: 19px
+}
+
+.risk-marker {
+  position: absolute;
+  top: 22px;
+  left: 10%;
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 11px solid #111
+}
+
+.conditions-data {
+  margin-top: 36px;
+  color: var(--accent);
+  font: 700 22px/1.5 'Barlow Condensed', sans-serif;
+  letter-spacing: 1px
+}
+
+.conditions-data button {
+  margin-top: 14px
+}
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: var(--accent);
+  color: white;
+  font: 700 14px 'DM Sans', sans-serif;
+  cursor: pointer
+}
+
+.btn:hover {
+  filter: brightness(1.06)
+}
+
+.btn.secondary {
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid #aab8e6
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid #8298c7
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed
+}
+
+.panel {
+  background: #f6f8ff;
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: var(--shadow);
+  color: #183e68
+}
+
+.panel h2 {
+  font: 800 25px 'Barlow Condensed', sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  color: var(--ink)
+}
+
+.panel p {
+  line-height: 1.55;
+  color: #526e93
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--accent)
+}
+
+.section-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr);
+  gap: 18px
+}
+
+.stack {
+  display: grid;
+  gap: 18px;
+  align-content: start
+}
+
+.dropzone {
+  border: 2px dashed #92a8da;
+  border-radius: 18px;
+  padding: 22px;
+  text-align: center;
+  background: #edf2ff
+}
+
+.preview {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #dce7f4;
+  display: none;
+  margin: 14px 0
+}
+
+.result {
+  padding: 15px;
+  border-radius: 15px;
+  background: #e8edff;
+  margin-top: 16px;
+  display: none
+}
+
+.result strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 5px
+}
+
+.result.risk {
+  background: #fff1d5
+}
+
+.result.safe {
+  background: #e3f5e9
+}
+
+.input-row {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap
+}
+
+.input-row input,
+.input-row select {
+  min-width: 0;
+  border: 1px solid #bdcbe5;
+  border-radius: 10px;
+  padding: 11px 12px;
+  font: inherit;
+  color: #183e68;
+  background: white
+}
+
+.input-row input[type=text] {
+  flex: 1
+}
+
+.metric {
+  background: #eaf0ff;
+  border-radius: 16px;
+  padding: 17px
+}
+
+.metric b {
+  display: block;
+  font: 800 34px 'Barlow Condensed', sans-serif;
+  color: var(--ink)
+}
+
+.metric small {
+  color: #627a9c
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 0
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 99px;
+  padding: 7px 11px;
+  background: #e8edf7;
+  color: #536c8d;
+  font-size: 12px;
+  font-weight: 700
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9aaac0
+}
+
+.status.online {
+  background: #e3f5e9;
+  color: #1d7942
+}
+
+.status.online .dot {
+  background: #1d9b52
+}
+
+.status.error {
+  background: #ffebeb;
+  color: #a52222
+}
+
+.status.error .dot {
+  background: #e22
+}
+
+.scale {
+  height: 10px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #36a86a, #e4ca39, #e26e38, #b9313a);
+  margin: 14px 0 7px
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  color: #7b8ea8;
+  font-size: 10px
+}
+
+.note {
+  font-size: 12px !important;
+  color: #7c8ca3 !important
+}
+
+.code {
+  font: 12px/1.5 ui-monospace, SFMono-Regular, monospace;
+  white-space: pre;
+  overflow: auto;
+  background: #102846;
+  color: #ddedff;
+  border-radius: 14px;
+  padding: 16px;
+  max-height: 360px
+}
+
+.tab-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0
+}
+
+.tab-row button {
+  border-radius: 99px;
+  border: 1px solid #bac8e2;
+  background: #fff;
+  padding: 8px 12px;
+  color: #405b7d;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.tab-row button.active {
+  background: var(--ink);
+  color: #fff
+}
+
+.map-box {
+  min-height: 300px;
+  border-radius: 18px;
+  background: linear-gradient(155deg, #b9e5f1 0 46%, #e6e2c3 46% 57%, #88c5db 57%);
+  position: relative;
+  overflow: hidden;
+  padding: 18px
+}
+
+.map-box:before {
+  content: '';
+  position: absolute;
+  inset: 57% 0 0;
+  background: repeating-linear-gradient(170deg, transparent 0 18px, #ffffff33 19px 21px)
+}
+
+.map-pin {
+  position: absolute;
+  left: 51%;
+  top: 52%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: #e84a4a;
+  border: 3px solid white;
+  box-shadow: 0 3px 8px #1235
+}
+
+.map-label {
+  position: relative;
+  background: #fffE;
+  padding: 7px 10px;
+  border-radius: 8px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700
+}
+
+.compare-bars {
+  display: grid;
+  gap: 12px
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 44px;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px
+}
+
+.bar {
+  height: 12px;
+  background: #e4eafa;
+  border-radius: 10px;
+  overflow: hidden
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 10px
+}
+
+.mobile-menu {
+  display: none;
+  border: 0;
+  background: #ffffff22;
+  color: white;
+  border-radius: 11px;
+  padding: 9px
+}
+
+.mobile-menu svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2
+}
+
+@media(max-width:900px) {
+  .sidebar {
+    width: 215px;
+    flex-basis: 215px
+  }
+
+  .home-grid {
+    grid-template-columns: 1fr
+  }
+
+  .conditions {
+    min-height: 350px
+  }
+
+  .section-grid {
+    grid-template-columns: 1fr
+  }
+}
+
+@media(max-width:680px) {
+  .app {
+    display: block
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100dvh;
+    transform: translateX(-105%);
+    transition: transform .2s;
+    width: 260px;
+    box-shadow: var(--shadow)
+  }
+
+  .sidebar.open {
+    transform: translateX(0)
+  }
+
+  .mobile-menu {
+    display: grid;
+    place-items: center
+  }
+
+  .main {
+    padding: 20px 15px 30px;
+    min-height: 100vh
+  }
+
+  .topbar {
+    margin-bottom: 20px;
+    gap: 12px
+  }
+
+  .page-title {
+    font-size: 36px;
+    letter-spacing: 3px;
+    gap: 9px
+  }
+
+  .page-title svg {
+    width: 39px;
+    height: 39px
+  }
+
+  .date-chip {
+    display: none
+  }
+
+  .card {
+    border-radius: 23px;
+    padding: 21px
+  }
+
+  .feature {
+    min-height: 185px
+  }
+
+  .feature h2 {
+    font-size: 23px
+  }
+
+  .feature-action {
+    font-size: 23px
+  }
+
+  .conditions {
+    min-height: 365px
+  }
+
+  .metrics {
+    grid-template-columns: 1fr 1fr
+  }
+
+  .panel {
+    padding: 19px
+  }
+
+  .section-grid {
+    gap: 12px
+  }
+
+  .feature-stack {
+    gap: 14px
+  }
+
+  .home-grid {
+    gap: 14px
+  }
+}
+
+#locationGate {
+  position: fixed;
+  inset: 0;
+  background: #174d86;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 20
+}
+
+.gate-card {
+  width: min(560px, 100%);
+  background: var(--lav);
+  border-radius: 30px;
+  padding: clamp(24px, 5vw, 48px);
+  box-shadow: var(--shadow)
+}
+
+.gate-brand {
+  font: 900 34px 'Barlow Condensed', sans-serif;
+  color: var(--accent);
+  letter-spacing: 2px
+}
+
+.gate-card h1 {
+  font: 900 clamp(34px, 7vw, 54px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 24px 0 10px
+}
+
+.gate-card p {
+  color: #536e93;
+  line-height: 1.45
+}
+
+.gate-row {
+  display: flex;
+  gap: 9px;
+  margin: 22px 0 12px
+}
+
+.gate-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #afbfdf;
+  border-radius: 12px;
+  padding: 14px;
+  font: 600 16px 'DM Sans', sans-serif
+}
+
+.gate-row button {
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: white;
+  padding: 0 18px;
+  font-weight: 800;
+  cursor: pointer
+}
+
+.gate-locate {
+  width: 100%;
+  border: 1px solid #a4b6db;
+  background: transparent;
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 13px;
+  font-weight: 800;
+  cursor: pointer
+}
+
+.gate-status {
+  min-height: 22px;
+  color: #8d2c32;
+  font-size: 13px;
+  margin-top: 10px
+}
+
+.gate-results {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px
+}
+
+.gate-results button {
+  border: 1px solid #b4c2e0;
+  background: white;
+  text-align: left;
+  border-radius: 11px;
+  padding: 12px;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer
+}
+
+#locationGate.hidden {
+  display: none
+}
+
+.location-label {
+  color: #dce7ff;
+  font-size: 13px;
+  font-weight: 700;
+  max-width: 260px;
+  text-align: right
+}
+
+.change-location {
+  border: 1px solid #ffffff55;
+  background: transparent;
+  color: #fff;
+  border-radius: 99px;
+  padding: 9px 12px;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.live-pill {
+  font-size: 11px;
+  color: #168047;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px
+}
+
+#beachesMap {
+  height: min(62vh, 560px);
+  min-height: 340px;
+  border-radius: 18px;
+  z-index: 1
+}
+
+.beach-list {
+  display: grid;
+  gap: 8px;
+  max-height: 420px;
+  overflow: auto
+}
+
+.beach-item {
+  background: #eaf0ff;
+  border-radius: 12px;
+  padding: 12px
+}
+
+.beach-item b {
+  display: block
+}
+
+.beach-item small {
+  color: #7184a0
+}
+
+.map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, .5fr);
+  gap: 15px
+}
+
+.compare-table {
+  display: grid;
+  gap: 6px
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 85px 80px;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px
+}
+
+.compare-head {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #7184a0
+}
+
+.compare-item {
+  border: 0;
+  background: #eaf0ff;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer
+}
+
+.compare-item:hover {
+  background: #dce6ff
+}
+
+.compare-item span {
+  font-size: 13px;
+  color: #5d7392
+}
+
+.compare-item b {
+  font-size: 14px
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px
+}
+
+@media(max-width:760px) {
+  .map-layout {
+    grid-template-columns: 1fr
+  }
+
+  .gate-row {
+    flex-direction: column
+  }
+
+  .gate-row button {
+    padding: 14px
+  }
+}
+  </style>
+ </head>
+ <body>
+  <section aria-label="Choose your beach location" id="locationGate">
+   <div class="gate-card">
+    <div class="gate-brand">
+     SHORESIGHT
+    </div>
+    <h1>
+     Find your beach
+    </h1>
+    <p>
+     Enter a ZIP code or share your location.
+    </p>
+    <form class="gate-row" id="zipForm">
+     <input autocomplete="postal-code" id="zipInput" inputmode="numeric" placeholder="ZIP code" required=""/>
+     <button type="submit">
+      Search
+     </button>
+    </form>
+    <button class="gate-locate" id="locateBtn">
+     Use my location
+    </button>
+    <div aria-live="polite" class="gate-status" id="gateStatus">
+    </div>
+    <div class="gate-results" id="locationResults">
+    </div>
+   </div>
+  </section>
+  <div class="app" id="appShell" style="visibility:hidden">
+   <aside class="sidebar" id="sidebar">
+    <div class="brand">
+     SHORESIGHT
+    </div>
+    <nav aria-label="Main navigation" class="nav">
+     <button class="active" data-page="home">
+      <svg viewbox="0 0 24 24">
+       <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1z">
+       </path>
+      </svg>
+      Home
+     </button>
+     <button data-page="conditions">
+      <svg viewbox="0 0 24 24">
+       <path d="M4 20V11M10 20V5M16 20v-8M22 20V8">
+       </path>
+      </svg>
+      Conditions
+     </button>
+     <button data-page="rip">
+      <svg viewbox="0 0 24 24">
+       <path d="M3 17c5 0 6-8 11-8s5 6 8 6">
+       </path>
+      </svg>
+      Rip Current
+     </button>
+     <button data-page="water">
+      <svg viewbox="0 0 24 24">
+       <path d="M12 3S6 10 6 14a6 6 0 0 0 12 0c0-4-6-11-6-11Z">
+       </path>
+       <path d="M9 15c1.5 1.5 4.5 1.5 6 0">
+       </path>
+      </svg>
+      Water Quality
+     </button>
+     <button data-page="map">
+      <svg viewbox="0 0 24 24">
+       <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z">
+       </path>
+       <circle cx="12" cy="10" r="2.5">
+       </circle>
+      </svg>
+      Map
+     </button>
+     <button data-page="compare">
+      <svg viewbox="0 0 24 24">
+       <path d="M12 3v9h9A9 9 0 1 1 12 3Z">
+       </path>
+       <path d="M16 3a9 9 0 0 1 5 5h-5z">
+       </path>
+      </svg>
+      Compare
+     </button>
+    </nav>
+    <div class="sidebar-foot">
+     BEACH CONDITIONS
+    </div>
+   </aside>
+   <main class="main">
+    <header class="topbar">
+     <button aria-label="Open menu" class="mobile-menu" id="menuBtn">
+      <svg viewbox="0 0 24 24">
+       <path d="M3 6h18M3 12h18M3 18h18">
+       </path>
+      </svg>
+     </button>
+     <h1 class="page-title" id="pageTitle">
+      <svg id="pageIcon" viewbox="0 0 24 24">
+       <path d="m2 9 10-7 10 7v13H2zM8 22V12h8v10">
+       </path>
+      </svg>
+      <span>
+       Home
+      </span>
+     </h1>
+     <div class="location-label" id="locationLabel">
+     </div>
+     <button class="change-location" id="changeLocation">
+      Change location
+     </button>
+    </header>
+    <section class="page active" id="page-home">
+     <div class="home-grid">
+      <div class="feature-stack">
+       <article class="card feature" data-open="rip">
+        <h2>
+         Rip Current Analyzer
+        </h2>
+        <div class="feature-action">
+         <svg viewbox="0 0 64 64">
+          <path d="M8 19h11l5-8h17l5 8h10a5 5 0 0 1 5 5v29a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V24a5 5 0 0 1 5-5Z">
+          </path>
+          <circle cx="32" cy="37" r="11">
+          </circle>
+         </svg>
+         <span>
+          TAKE PHOTO
+         </span>
+        </div>
+       </article>
+       <article class="card feature" data-open="water">
+        <h2>
+         Water Quality Tester
+        </h2>
+        <div class="feature-action">
+         <svg viewbox="0 0 64 64">
+          <circle cx="32" cy="32" r="22">
+          </circle>
+          <path d="M32 18v28M18 32h28">
+          </path>
+         </svg>
+         <span>
+          CONNECT
+         </span>
+        </div>
+       </article>
+      </div>
+      <aside class="card conditions">
+       <h2>
+        Conditions
+       </h2>
+       <div class="advisory-label">
+        OVERALL BEACH RISK
+       </div>
+       <div class="risk-summary">
+        <svg aria-label="Beach flag" class="risk-flag" viewbox="0 0 48 56">
+         <path d="M12 5v46" fill="none" stroke="#173f72" stroke-linecap="round" stroke-width="4">
+         </path>
+         <path d="M15 8h25L32 19l8 10H15z" fill="#159447" id="riskFlagCloth">
+         </path>
+        </svg>
+        <div class="advisory-number" id="riskPercent">
+         -%
+        </div>
+       </div>
+       <div class="risk-bar">
+        <span>
+        </span>
+        <span>
+        </span>
+        <span>
+        </span>
+        <i class="risk-marker" id="riskMarker">
+        </i>
+       </div>
+       <div class="conditions-data">
+        <div id="homeAir">
+         Air -
+        </div>
+        <div id="homeWater">
+         Water -
+        </div>
+        <div id="homeWaveRow">
+         Waves -
+        </div>
+        <div id="homeWind">
+         Wind -
+        </div>
+        <button class="btn secondary" data-open="conditions">
+         View conditions
+        </button>
+       </div>
+      </aside>
+     </div>
+     <div class="panel" style="margin-top:18px">
+      <div class="section-heading">
+       <h2 id="homeBeachTitle">
+        Nearby beaches
+       </h2>
+      </div>
+      <div id="homeAlert" style="margin-top:10px">
+       Loading local alerts&hellip;
+      </div>
+     </div>
+    </section>
+    <section class="page" id="page-rip">
+     <div class="panel">
+      <h2>
+       Rip Current Analyzer
+      </h2>
+      <div class="input-row" style="margin:18px 0">
+       <label class="btn" for="cameraInput">
+        Use camera
+       </label>
+       <label class="btn secondary" for="fileInput">
+        Choose photo
+       </label>
+       <input accept="image/*" capture="environment" hidden="" id="cameraInput" type="file"/>
+       <input accept="image/*" hidden="" id="fileInput" type="file"/>
+      </div>
+      <img alt="Selected shoreline preview" class="preview" id="photoPreview"/>
+      <button class="btn" id="analyzeBtn" style="display:none">
+       Analyze photo
+      </button>
+      <div aria-live="polite" class="result" id="ripResult">
+      </div>
+     </div>
+    </section>
+    <section class="page" id="page-water">
+     <div class="panel">
+      <h2>
+       Water Quality Tester
+      </h2>
+      <div class="input-row" style="margin:15px 0">
+       <input aria-label="ESP32 address" id="espUrl" placeholder="ESP32 address" type="text"/>
+       <button class="btn" id="connectBtn">
+        Connect
+       </button>
+       <button class="btn secondary" disabled="" id="readBtn">
+        Read
+       </button>
+      </div>
+      <span class="status" id="sensorStatus">
+       <i class="dot">
+       </i>
+       <span>
+        Not connected
+       </span>
+      </span>
+      <span class="note" id="readTime" style="margin-left:9px">
+      </span>
+      <div class="metrics">
+       <div class="metric">
+        <small>
+         NTU
+        </small>
+        <b id="ntuValue">
+         -
+        </b>
+        <small id="ntuQuality">
+         Calibration required
+        </small>
+       </div>
+       <div class="metric">
+        <small>
+         Raw ADC
+        </small>
+        <b id="rawValue">
+         -
+        </b>
+        <small>
+         counts
+        </small>
+       </div>
+       <div class="metric">
+        <small>
+         Output
+        </small>
+        <b id="voltValue">
+         -
+        </b>
+        <small>
+         volts
+        </small>
+       </div>
+      </div>
+      <div class="scale">
+      </div>
+      <div class="scale-labels">
+       <span>
+        Clearer
+       </span>
+       <span>
+        More turbid
+       </span>
+      </div>
+      <p id="interpretation">
+       No reading received.
+      </p>
+     </div>
+    </section>
+    <section class="page" id="page-conditions">
+     <div class="section-grid">
+      <div class="panel">
+       <h2 id="conditionsTitle">
+        Beach conditions
+       </h2>
+       <div class="metrics">
+        <div class="metric">
+         <small>
+          Air temperature
+         </small>
+         <b id="airTemp">
+          -
+         </b>
+         <small id="weatherText">
+          Current observation
+         </small>
+        </div>
+        <div class="metric">
+         <small>
+          Water temperature
+         </small>
+         <b id="waterTemp">
+          -
+         </b>
+        </div>
+        <div class="metric">
+         <small>
+          Wave height
+         </small>
+         <b id="waveHeight">
+          -
+         </b>
+        </div>
+        <div class="metric">
+         <small>
+          Wind
+         </small>
+         <b id="windSpeed">
+          -
+         </b>
+         <small id="windDirection">
+          -
+         </small>
+        </div>
+        <div class="metric">
+         <small>
+          Wave period
+         </small>
+         <b id="wavePeriod">
+          -
+         </b>
+        </div>
+        <div class="metric">
+         <small>
+          Marine alerts
+         </small>
+         <b id="alertCount">
+          -
+         </b>
+        </div>
+       </div>
+       <p class="note" id="updatedAt">
+       </p>
+      </div>
+      <div class="stack">
+       <div class="panel">
+        <h2>
+         Local alerts
+        </h2>
+        <div id="alertList">
+         Loading&hellip;
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section class="page" id="page-map">
+     <div class="panel">
+      <div class="section-heading">
+       <div>
+        <h2>
+         Nearby beaches
+        </h2>
+       </div>
+      </div>
+      <div class="map-layout" style="margin-top:14px">
+       <div aria-label="Map showing your location and nearby beaches" id="beachesMap">
+       </div>
+       <div class="panel" style="box-shadow:none;padding:8px">
+        <h2>
+         Beach locations
+        </h2>
+        <div class="beach-list" id="beachList">
+         Finding mapped beaches&hellip;
+        </div>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section class="page" id="page-compare">
+     <div class="panel">
+      <h2>
+       Compare close beaches
+      </h2>
+      <div class="beach-list" id="compareBeachList">
+       Finding mapped beaches&hellip;
+      </div>
+     </div>
+    </section>
+   </main>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
+  <script>
+   const pages = ['home', 'conditions', 'rip', 'water', 'map', 'compare'];
+const titles = {
+  home: 'Home',
+  conditions: 'Conditions',
+  rip: 'Rip Current',
+  water: 'Water Quality',
+  map: 'Map',
+  compare: 'Compare'
+};
+const icons = {
+  home: '<path d="m2 9 10-7 10 7v13H2zM8 22V12h8v10"/>',
+  conditions: '<path d="M4 20V11M10 20V5M16 20v-8M22 20V8"/>',
+  rip: '<path d="M3 17c5 0 6-8 11-8s5 6 8 6"/><path d="M3 21c5 0 6-8 11-8s5 6 8 6"/>',
+  water: '<path d="M12 3S6 10 6 14a6 6 0 0 0 12 0c0-4-6-11-6-11Z"/><path d="M9 15c1.5 1.5 4.5 1.5 6 0"/>',
+  map: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+  compare: '<path d="M12 3v9h9A9 9 0 1 1 12 3Z"/><path d="M16 3a9 9 0 0 1 5 5h-5z"/>'
+};
+let beachLocation = null,
+  beachMap = null,
+  userMarker = null,
+  beachMarkers = [],
+  nearbyBeaches = [];
+let riskInputs = {
+  wave: NaN,
+  wind: NaN,
+  alerts: null,
+  alertsAvailable: false
+};
+const $ = id => document.getElementById(id);
+
+function openPage(key) {
+  if (!pages.includes(key)) return;
+  document.querySelectorAll('.page').forEach(x => x.classList.toggle('active', x.id === 'page-' + key));
+  document.querySelectorAll('.nav button').forEach(x => x.classList.toggle('active', x.dataset.page === key));
+  $('pageTitle').querySelector('span').textContent = titles[key];
+  $('pageIcon').innerHTML = icons[key];
+  $('sidebar').classList.remove('open');
+  if (key === 'map') setTimeout(() => {
+    if (beachMap) beachMap.invalidateSize()
+  }, 80);
+  window.scrollTo(0, 0)
+}
+document.querySelectorAll('.nav button').forEach(b => b.onclick = () => openPage(b.dataset.page));
+document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openPage(b.dataset.open));
+$('menuBtn').onclick = () => $('sidebar').classList.toggle('open');
+$('changeLocation').onclick = () => {
+  $('locationGate').style.removeProperty('display');
+  $('locationGate').classList.remove('hidden')
+};
+
+function gateMessage(t, error = false) {
+  $('gateStatus').textContent = t;
+  $('gateStatus').style.color = error ? '#8d2c32' : '#536e93'
+}
+async function searchZip(zip) {
+  gateMessage('Finding location…');
+  $('locationResults').innerHTML = '';
+  try {
+    const country = /^\d{5}(-\d{4})?$/.test(zip) ? '&countryCode=US' : '';
+    const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(zip) + '&count=6&language=en&format=json' + country);
+    if (!r.ok) throw Error('Geocoding service unavailable');
+    const j = await r.json();
+    if (!j.results?.length) throw Error('No matching ZIP code found');
+    gateMessage('Choose your location');
+    $('locationResults').innerHTML = j.results.map((x, i) => '<button type="button" data-result="' + i + '">' + [x.name, x.admin1, x.country].filter(Boolean).join(', ') + '</button>').join('');
+    [...$('locationResults').querySelectorAll('button')].forEach((b, i) => b.onclick = () => startAt(j.results[i]));
+  } catch (e) {
+    gateMessage(e.message, true)
+  }
+}
+$('zipForm').onsubmit = e => {
+  e.preventDefault();
+  searchZip($('zipInput').value.trim())
+};
+$('locateBtn').onclick = () => {
+  if (!navigator.geolocation) {
+    gateMessage('Location is not supported in this browser.', true);
+    return
+  }
+  gateMessage('Requesting location…');
+  navigator.geolocation.getCurrentPosition(p => startAt({
+    latitude: p.coords.latitude,
+    longitude: p.coords.longitude,
+    name: 'Current location',
+    admin1: '',
+    country: ''
+  }), e => gateMessage(e.code === 1 ? 'Location access was denied. Enter a ZIP code instead.' : 'Could not get your location. Enter a ZIP code instead.', true), {
+    enableHighAccuracy: true,
+    timeout: 12000,
+    maximumAge: 60000
+  })
+};
+
+function startAt(place) {
+  beachLocation = {
+    lat: Number(place.latitude),
+    lon: Number(place.longitude),
+    name: place.name || 'Current location',
+    region: place.admin1 || '',
+    country: place.country || ''
+  };
+  $('locationGate').classList.add('hidden');
+  $('appShell').style.visibility = 'visible';
+  $('locationLabel').textContent = [beachLocation.name, beachLocation.region].filter(Boolean).join(', ');
+  $('conditionsTitle').textContent = 'Conditions · ' + beachLocation.name;
+  $('homeBeachTitle').textContent = 'Nearby beaches · ' + beachLocation.name;
+  refreshAll()
+}
+async function refreshAll() {
+  if (!beachLocation) return;
+  await Promise.allSettled([loadWeather(), loadMarine(), loadAlerts(), loadBeaches()])
+}
+const coord = () => `latitude=${beachLocation.lat}&longitude=${beachLocation.lon}`;
+
+function updateRisk() {
+  const known = Number.isFinite(riskInputs.wave) && Number.isFinite(riskInputs.wind) && riskInputs.alertsAvailable;
+  if (!known) {
+    $('riskPercent').textContent = '-%';
+    $('riskMarker').style.left = '0%';
+    $('riskFlagCloth').setAttribute('fill', '#8293aa');
+    return
+  }
+  const waveScore = Math.min(45, Math.max(0, riskInputs.wave) / 8 * 45),
+    windScore = Math.min(25, Math.max(0, riskInputs.wind) / 40 * 25);
+  let alertScore = 0;
+  for (const f of riskInputs.alerts || []) {
+    const p = f.properties || {},
+      event = (p.event || '').toLowerCase(),
+      severity = (p.severity || '').toLowerCase();
+    let score = /rip current|high surf|beach hazard/.test(event) ? 45 : severity === 'extreme' ? 30 : severity === 'severe' ? 25 : severity === 'moderate' ? 16 : severity === 'minor' ? 8 : 12;
+    alertScore = Math.max(alertScore, score)
+  }
+  const value = Math.min(100, Math.round(waveScore + windScore + alertScore)),
+    level = value < 30 ? 'Low' : value < 60 ? 'Moderate' : 'High',
+    color = value < 30 ? '#159447' : value < 60 ? '#e1b82b' : '#e32636';
+  $('riskPercent').textContent = value + '%';
+  $('riskMarker').style.left = Math.max(2, Math.min(96, value)) + '%';
+  $('riskFlagCloth').setAttribute('fill', color)
+}
+async function loadWeather() {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?' + coord() + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto');
+    if (!r.ok) throw Error();
+    const j = await r.json(),
+      c = j.current;
+    const t = c.temperature_2m;
+    riskInputs.wind = typeof c.wind_speed_10m === 'number' ? c.wind_speed_10m : NaN;
+    updateRisk();
+    $('airTemp').textContent = Number.isFinite(t) ? Math.round(t) + '°F' : 'Unavailable';
+    $('homeAir').textContent = 'Air ' + (Number.isFinite(t) ? Math.round(t) + '°' : '-');
+    $('windSpeed').textContent = Number.isFinite(c.wind_speed_10m) ? Math.round(c.wind_speed_10m) + ' mph' : 'Unavailable';
+    $('homeWind').textContent = 'Wind ' + (Number.isFinite(c.wind_speed_10m) ? Math.round(c.wind_speed_10m) + ' mph' : '-');
+    $('windDirection').textContent = Number.isFinite(c.wind_direction_10m) ? `${Math.round(c.wind_direction_10m)}° direction` : 'Wind direction unavailable';
+    $('weatherText').textContent = weatherCode(c.weather_code);
+    $('updatedAt').textContent = 'Updated ' + new Date(c.time).toLocaleString([], {
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  } catch {
+    riskInputs.wind = NaN;
+    updateRisk();
+    $('airTemp').textContent = 'Unavailable';
+    $('weatherText').textContent = 'Weather data unavailable';
+    $('homeAir').textContent = 'Air -';
+  }
+}
+
+function weatherCode(c) {
+  const m = {
+    0: 'Clear',
+    1: 'Mostly clear',
+    2: 'Partly cloudy',
+    3: 'Overcast',
+    45: 'Fog',
+    48: 'Rime fog',
+    51: 'Light drizzle',
+    53: 'Drizzle',
+    55: 'Heavy drizzle',
+    61: 'Light rain',
+    63: 'Rain',
+    65: 'Heavy rain',
+    71: 'Light snow',
+    73: 'Snow',
+    75: 'Heavy snow',
+    80: 'Rain showers',
+    81: 'Rain showers',
+    82: 'Heavy showers',
+    95: 'Thunderstorm',
+    96: 'Thunderstorm',
+    99: 'Severe thunderstorm'
+  };
+  return m[c] || 'Current conditions'
+}
+async function loadMarine() {
+  try {
+    const r = await fetch('https://marine-api.open-meteo.com/v1/marine?' + coord() + '&current=wave_height,wave_period,sea_surface_temperature&temperature_unit=fahrenheit&length_unit=imperial&timezone=auto');
+    if (!r.ok) throw Error();
+    const j = await r.json(),
+      c = j.current || {},
+      wave = typeof c.wave_height === 'number' ? c.wave_height : NaN,
+      sst = typeof c.sea_surface_temperature === 'number' ? c.sea_surface_temperature : NaN,
+      period = typeof c.wave_period === 'number' ? c.wave_period : NaN;
+    riskInputs.wave = wave;
+    updateRisk();
+    $('waveHeight').textContent = Number.isFinite(wave) ? wave.toFixed(1) + ' ft' : 'Unavailable';
+    $('homeWaveRow').textContent = 'Waves ' + (Number.isFinite(wave) ? wave.toFixed(1) + ' ft' : '-');
+    $('waterTemp').textContent = Number.isFinite(sst) ? Math.round(sst) + '°F' : 'Unavailable';
+    $('homeWater').textContent = 'Water ' + (Number.isFinite(sst) ? Math.round(sst) + '°' : '-');
+    $('wavePeriod').textContent = Number.isFinite(period) ? period.toFixed(1) + ' s' : 'Unavailable';
+  } catch {
+    riskInputs.wave = NaN;
+    updateRisk();
+    $('waveHeight').textContent = 'Unavailable';
+    $('homeWaveRow').textContent = 'Waves -';
+    $('waterTemp').textContent = 'Unavailable';
+    $('homeWater').textContent = 'Water -';
+    $('wavePeriod').textContent = 'Unavailable';
+  }
+}
+async function loadAlerts() {
+  try {
+    const r = await fetch(`https://api.weather.gov/alerts/active?point=${beachLocation.lat},${beachLocation.lon}`, {
+      headers: {
+        Accept: 'application/geo+json'
+      }
+    });
+    if (!r.ok) throw Error();
+    const j = await r.json(),
+      features = j.features || [];
+    riskInputs.alerts = features;
+    riskInputs.alertsAvailable = true;
+    updateRisk();
+    $('alertCount').textContent = features.length ? String(features.length) : 'None';
+    if (!features.length) {
+      $('alertList').innerHTML = '<p>No active NWS alerts.</p>';
+      $('homeAlert').textContent = 'No active NWS alerts.'
+    } else {
+      $('alertList').innerHTML = features.slice(0, 5).map(f => '<div class="beach-item"><b>' + esc(f.properties.event || 'Weather alert') + '</b><small>' + esc(f.properties.headline || 'Active alert') + '</small></div>').join('');
+      $('homeAlert').textContent = features.length + ' active NWS alert' + (features.length === 1 ? '' : 's') + ' · open Conditions for details.'
+    }
+  } catch {
+    riskInputs.alertsAvailable = false;
+    updateRisk();
+    $('alertCount').textContent = 'Unavailable';
+    $('alertList').innerHTML = '<p>NWS alerts are unavailable for this location.</p>';
+    $('homeAlert').textContent = 'NWS alert feed unavailable.'
+  }
+}
+async function loadBeaches() {
+  for (const el of [$('beachList'), $('compareBeachList')]) el.textContent = 'Loading…';
+  try {
+    const {
+      lat,
+      lon
+    } = beachLocation;
+    const params = new URLSearchParams({
+      q: 'beach',
+      lat: String(lat),
+      lon: String(lon),
+      limit: '30',
+      zoom: '12',
+      osm_tag: 'natural:beach'
+    });
+    const r = await fetch('https://photon.komoot.io/api?' + params);
+    if (!r.ok) throw Error('Beach search unavailable');
+    const j = await r.json();
+    nearbyBeaches = (j.features || []).map(f => {
+      const [x, y] = f.geometry.coordinates, p = f.properties || {};
+      return {
+        name: p.name || 'Beach',
+        lat: y,
+        lon: x,
+        distance: distance(lat, lon, y, x)
+      }
+    }).filter(b => b.distance <= 25);
+    const unique = new Map();
+    nearbyBeaches.forEach(x => {
+      let k = x.name.toLowerCase() + '|' + x.lat.toFixed(3) + '|' + x.lon.toFixed(3);
+      if (!unique.has(k)) unique.set(k, x)
+    });
+    nearbyBeaches = [...unique.values()].sort((a, b) => a.distance - b.distance).slice(0, 12);
+    drawBeachLists();
+    drawMap();
+    loadComparisons()
+  } catch {
+    nearbyBeaches = [];
+    [$('beachList'), $('compareBeachList')].forEach(el => el.innerHTML = '<div class="beach-item">Beach search unavailable.</div>');
+    drawMap()
+  }
+}
+
+function drawBeachLists() {
+  const items = nearbyBeaches.length ? nearbyBeaches.map((b, i) => `<div class="beach-item"><b>${esc(b.name)}</b><small>${b.distance.toFixed(1)} km</small></div>`).join('') : '<div class="beach-item">No mapped beaches within 25 km.</div>';
+  $('beachList').innerHTML = items;
+  $('compareBeachList').innerHTML = nearbyBeaches.length ? '<div class="compare-table"><div class="compare-row compare-head"><span>Beach</span><span>Distance</span><span>Waves</span></div>' + nearbyBeaches.slice(0, 8).map((b, i) => `<button class="compare-row compare-item" data-beach="${i}"><b>${esc(b.name)}</b><span>${b.distance.toFixed(1)} km</span><span class="beach-wave">Loading…</span></button>`).join('') + '</div>' : '<div class="beach-item">No mapped beaches within 25 km.</div>';
+  document.querySelectorAll('[data-beach]').forEach(el => el.onclick = () => {
+    openPage('map');
+    const b = nearbyBeaches[Number(el.dataset.beach)];
+    if (b && beachMap) {
+      beachMap.setView([b.lat, b.lon], 15);
+      const marker = beachMarkers[Number(el.dataset.beach)];
+      marker?.openPopup()
+    }
+  })
+}
+async function loadComparisons() {
+  if (!nearbyBeaches.length) return;
+  const beaches = nearbyBeaches.slice(0, 8);
+  try {
+    const lats = beaches.map(b => b.lat).join(','),
+      lons = beaches.map(b => b.lon).join(',');
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lats}&longitude=${lons}&current=wave_height&length_unit=imperial&timezone=auto`;
+    const r = await fetch(url);
+    if (!r.ok) throw Error();
+    let data = await r.json();
+    if (!Array.isArray(data)) data = [data];
+    const rows = [...document.querySelectorAll('.compare-item')];
+    rows.forEach((row, i) => {
+      const v = data[i]?.current?.wave_height;
+      row.querySelector('.beach-wave').textContent = typeof v === 'number' ? v.toFixed(1) + ' ft' : '-'
+    })
+  } catch {
+    document.querySelectorAll('.beach-wave').forEach(x => x.textContent = '-')
+  }
+}
+
+function drawMap() {
+  if (!window.L || !beachLocation) return;
+  if (!beachMap) {
+    beachMap = L.map('beachesMap').setView([beachLocation.lat, beachLocation.lon], 12);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Tiles © Esri - Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), OpenStreetMap contributors, and the GIS User Community'
+    }).addTo(beachMap)
+  }
+  beachMap.setView([beachLocation.lat, beachLocation.lon], 12);
+  if (userMarker) userMarker.remove();
+  beachMarkers.forEach(m => m.remove());
+  beachMarkers = [];
+  userMarker = L.marker([beachLocation.lat, beachLocation.lon]).addTo(beachMap).bindPopup('Your selected location');
+  nearbyBeaches.forEach(b => {
+    let m = L.marker([b.lat, b.lon]).addTo(beachMap).bindPopup(`${esc(b.name)} · ${b.distance.toFixed(1)} km`);
+    beachMarkers.push(m)
+  });
+  setTimeout(() => beachMap.invalidateSize(), 100)
+}
+
+function distance(a, b, c, d) {
+  const rad = x => x * Math.PI / 180,
+    R = 6371;
+  let d1 = rad(c - a),
+    d2 = rad(d - b),
+    z = Math.sin(d1 / 2) ** 2 + Math.cos(rad(a)) * Math.cos(rad(c)) * Math.sin(d2 / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(z))
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  } [c]))
+}
+const preview = $('photoPreview'),
+  analyzeBtn = $('analyzeBtn'),
+  ripResult = $('ripResult');
+let imageReady = false;
+
+function loadPhoto(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  analyzeBtn.style.display = 'inline-block';
+  ripResult.style.display = 'none';
+  preview.onload = () => imageReady = true
+} ['cameraInput', 'fileInput'].forEach(id => $(id).addEventListener('change', e => loadPhoto(e.target.files[0])));
+analyzeBtn.onclick = () => {
+  if (!imageReady) return;
+  const c = document.createElement('canvas'),
+    w = 360,
+    h = Math.round(preview.naturalHeight * 360 / preview.naturalWidth);
+  c.width = w;
+  c.height = Math.min(h, 360);
+  const ctx = c.getContext('2d', {
+    willReadFrequently: true
+  });
+  ctx.drawImage(preview, 0, preview.naturalHeight - c.height * preview.naturalWidth / w, preview.naturalWidth, c.height * preview.naturalWidth / w, 0, 0, w, c.height);
+  const d = ctx.getImageData(0, 0, w, c.height).data;
+  let mean = 0,
+    blue = 0,
+    variance = 0,
+    n = 0;
+  for (let y = Math.floor(c.height * .35); y < c.height; y += 3)
+    for (let x = 0; x < w; x += 3) {
+      let i = (y * w + x) * 4,
+        lum = .2126 * d[i] + .7152 * d[i + 1] + .0722 * d[i + 2];
+      mean += lum;
+      blue += d[i + 2] - d[i];
+      n++
+    }
+  mean /= Math.max(n, 1);
+  blue /= Math.max(n, 1);
+  for (let y = Math.floor(c.height * .35); y < c.height; y += 3)
+    for (let x = 0; x < w; x += 3) {
+      let i = (y * w + x) * 4,
+        lum = .2126 * d[i] + .7152 * d[i + 1] + .0722 * d[i + 2];
+      variance += (lum - mean) ** 2
+    }
+  let texture = Math.sqrt(variance / Math.max(n, 1)),
+    flag = (texture > 37 && blue > 3) || (texture > 49);
+  ripResult.style.display = 'block';
+  ripResult.className = 'result ' + (flag ? 'risk' : 'safe');
+  ripResult.innerHTML = '<strong>' + (flag ? 'Caution: probably a rip current' : 'No visble rip current') + '</strong><span>' + (flag ? 'This photo has a strong texture pattern in the water area.' : 'No pattern showing a rip current') + '</span><p class="note">This tool only looks for visual patterns, and reading can be wrong</p>'
+};
+const sensorStatus = $('sensorStatus'),
+  readBtn = $('readBtn');
+
+function setStatus(msg, kind = '') {
+  sensorStatus.className = 'status ' + kind;
+  sensorStatus.innerHTML = '<i class="dot"></i><span>' + msg + '</span>'
+}
+
+function baseUrl() {
+  let s = $('espUrl').value.trim();
+  if (!s) s = 'http://192.168.4.1';
+  if (!/^https?:\/\//i.test(s)) s = 'http://' + s;
+  return s.replace(/\/$/, '')
+}
+
+function interpret(nt) {
+  if (nt == null || !Number.isFinite(nt)) return {
+    label: 'Raw signal only',
+    text: 'No calibrated NTU value returned.'
+  };
+  if (nt < 1) return {
+    label: 'Very clear signal',
+    text: 'Very low turbidity reading.'
+  };
+  if (nt < 5) return {
+    label: 'Low turbidity',
+    text: 'Low suspended-particle reading.'
+  };
+  if (nt < 25) return {
+    label: 'Elevated turbidity',
+    text: 'Elevated suspended-particle reading.'
+  };
+  return {
+    label: 'High turbidity signal',
+    text: 'High suspended-particle reading.'
+  }
+}
+async function readSensor() {
+  setStatus('Reading…');
+  try {
+    const r = await fetch(baseUrl() + '/api/readings', {
+      cache: 'no-store'
+    });
+    if (!r.ok) throw Error('HTTP ' + r.status);
+    const j = await r.json(),
+      raw = Number(j.raw),
+      v = Number(j.voltage),
+      nt = j.ntu == null ? null : Number(j.ntu);
+    $('rawValue').textContent = Number.isFinite(raw) ? Math.round(raw) : '-';
+    $('voltValue').textContent = Number.isFinite(v) ? v.toFixed(3) + ' V' : '-';
+    $('ntuValue').textContent = Number.isFinite(nt) ? nt.toFixed(1) : '-';
+    const result = interpret(nt);
+    $('ntuQuality').textContent = result.label;
+    $('interpretation').textContent = result.text;
+    $('readTime').textContent = 'Updated ' + new Date().toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+    setStatus('Connected', 'online')
+  } catch (e) {
+    setStatus('Could not read device', 'error');
+    $('interpretation').textContent = 'Connection failed: ' + e.message + '. Check the ESP32 address and Wi-Fi.'
+  }
+}
+$('connectBtn').onclick = async () => {
+  await readSensor();
+  if (sensorStatus.classList.contains('online')) readBtn.disabled = false
+};
+readBtn.onclick = readSensor;
+  </script>
+ </body>
+</html>
+
